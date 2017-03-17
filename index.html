@@ -1,122 +1,114 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-<head>
-	<meta charset="utf-8">
-	<title>MTA Fare Calculator</title>
-	<link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css">
-</head>
-<body>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content="Calculates suggested MTA charges">
+    <meta name="author" content="Ryne Carbone">
+    <link rel="icon" href="../../favicon.ico">
+
+    <title>MTA Fare Calculator</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <link href="assets/css/ie10-viewport-bug-workaround.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="sticky-footer.css" rel="stylesheet">
+
+    <!-- Just for debugging purposes. Don't actually copy these 2 lines! -->
+    <!--[if lt IE 9]><script src="../../assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
+    <script src="assets/js/ie-emulation-modes-warning.js"></script>
+
+  </head>
+
+  <body>
+
+	<!-- Begin page content -->
 	<div class="container">
-		<div class="header">
-			<h3>MTA Fare Calculator</h3>
+  	
+		<div class="page-header">
+    	<h1>MTA Fare Calculator</h1>
+    </div>
+    
+		<p class="lead">Calculates a recommended amount to add to your MTA card to minimize remaining balances.</p>
+		
+		<blockquote class="blockquote blockquote-reverse">
+  		<p class="mb-0">This fare calculator has saved me literally tens of cents.</p>
+  		<footer class="blockquote-footer">Someone waiting in line to refill their MTA card</footer>
+		</blockquote>
+
+		<div id="fare-info">
+			<table class="table">
+				<thead>
+				</thead>
+				<tbody>
+					<tr> 
+						<td>Base Fare</td> <td><b>$2.75</b></td> <td>Bonus</td> <td class="text-success"><b>11%</b></td>
+					</tr>
+					<tr>
+						<td>Payment Increment</td> <td>$0.05</td> <td>Minimum For Bonus</td> <td>$5.50</td>
+					</tr>
+				</tbody>
+			</table>
 		</div>
-		<form class="form-horizontal" role="form">
-			<div class="form-group">
-				<div class="col-sm-offset-2 col-sm-10">
-					<div class="radio">
-						<label><input type="radio" name="cardType" value="new" checked> New Card ($1.00 fee)</label>
+
+		<form class="form-horizontal col-md-12" role="form">
+			
+			<fieldset class="form-group">
+		    <legend>Refill Options</legend>
+		    <div class="form-check">
+		      <label class="form-check-label">
+		        <input type="radio" class="form-check-input" name="hasCard" id="new" value="new" checked>
+						Purchase New Card ($1.00 fee)
+					</label>
+		    </div>
+		    <div class="form-check">
+		    <label class="form-check-label">
+		        <input type="radio" class="form-check-input" name="hasCard" id="old" value="old">
+		      	Refill Old Card
+					</label>
+		    	<div class="input-group">
+						<span class="input-group-addon">$</span>
+						<input id="amountLeft" name="amountLeft" class="form-control" type="number" disabled placeholder="Remaining balance" min=0 max=1000 step=0.01>
 					</div>
 				</div>
-			</div>
-			
+		  </fieldset>
+
 			<div class="form-group">
-				<div class="col-sm-offset-2 col-sm-10">			
-					<div class="radio">
-						<label><input type="radio" name="cardType" value="existing"> Existing Card</label>
-					</div>
+				<div class="col-md-12">
+					<button class="btn btn-success" type="submit">Save me money</button>
 				</div>
 			</div>
-			
-			<div class="form-group">
-				<label for="existingBalance" class="col-sm-2 control-label">Existing balance</label>
-				<div class="col-sm-10">
-					<input id="existingBalance" name="existingBalance" class="form-control" type="number" placeholder="Existing balance" disabled value="0" min=0 max=1000 step=0.01>
-				</div>
-			</div>
-			
-			<div class="form-group">
-				<div class="col-sm-offset-2 col-sm-10">
-					<button class="btn btn-primary" type="submit">Calculate</button>
-				</div>
-			</div>
-			
+
 		</form>
 
 		<div class="row">
-			<div class="col-sm-offset-2 col-sm-10">
-				<table class="table table-condensed table-hover">
-					<thead><tr><th>You should pay</th><th>With Bonus</th><th>For Balance</th><th>Number of rides</th></tr></thead>
-					<tbody></tbody>
+			<div class="col-md-12">
+				<table class="table table-striped table-hover">
+					<thead><tr><th>Amount to Add</th><th>Bonus</th><th>Total Value</th><th>Rides</th><th>Remainder</th></tr></thead>
+					<tbody id="suggestion-table"></tbody>
 				</table>
 			</div>
 		</div>
-	</div>
 	
+	</div>
+
+	<!-- FOOTER -->
+  <footer class="footer">
+  	<div class="container">
+      <p class="text-muted text-center">Fares and bonuses are accurate as of March 2017</p>
+    </div>
+  </footer>
+
+  <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+  <script src="assets/js/ie10-viewport-bug-workaround.js"></script>
 	<script src="https://code.jquery.com/jquery.min.js"></script>
-	<script>
-		(function() {
-			var baseFare = 2.75;
-			var newCardFee = 1.00;
-			var minAmountForBonus=5.50;
-			var bonus=0.11;
-			var machineIncrements = 0.05;
-			
-			var cash = function(credit, existing) {
-				existing = isNaN(existing) ? 0 : parseFloat(existing);
-				var amountBonus = 0;
-				if (credit >= minAmountForBonus) {
-					amountBonus = parseFloat((credit * bonus).toFixed(2));
-				}
-				var newBalance = credit + amountBonus + existing;
-				return  {
-					whatToPay: credit,
-					bonus: amountBonus,
-					balance: newBalance
-				};
-			};
-			
-			$('body').on('submit', 'form', function(e) {
-				e.preventDefault();
-				
-				var form = $(this).serialize().split("&");
-				
-				var existingBalance = $('#existingBalance:not([disabled])').val() || 0;
-				
-				var isNewCard = $('input[name="cardType"]:checked').val() === 'new';
-				
-				var tbody = $('tbody').empty();
-				var amount = machineIncrements;
-				var i = 0;
-				while (amount < 120) {
-					var credit = parseFloat((i++ * machineIncrements).toFixed(2));
-					var card = cash(credit, existingBalance);
-					var amount = card.whatToPay;
-					if (isNewCard) {
-						amount += 1;
-					}
-					
-					if (amount > 0) {
-						var trips = parseFloat(card.balance.toFixed(2)) / baseFare;
-						if (trips > 0 && trips % 1 === 0) {
-							var contents = ['$' + amount.toFixed(2), '$' + card.bonus.toFixed(2), '$' + card.balance.toFixed(2), trips].join('</td><td>'); 
-							tbody.append(['<tr><td>', contents, '</td></tr>'].join(''));
-						}
-					}
-				}
-			});
-			
-			$('body').on('change', 'input[name="cardType"]', function() {
-				var existing = this.value ==='existing';
-				
-				if (existing && $(this).is(':checked')) {
-					$('#existingBalance').removeAttr('disabled').focus();
-				} else {
-					$('#existingBalance').attr('disabled', true);
-				}
-				
-			});
-			
-		})();
-	</script>
-</body>
+	<script src="mta_calc.js"></script>
+  
+	</body>
 </html>
