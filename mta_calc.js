@@ -12,16 +12,20 @@
 	};
 	
 	var calc_pay = function(remaining, nRides, i_bonus){
-		var load    = ( (nRides*singleFare - remaining) / i_bonus ).toFixed(2);
+		var load    = round_two( (nRides*singleFare - remaining) / i_bonus );
 		if(load < bonusMin && i_bonus > 1.0 ){
-			load = (nRides*singleFare - remaining).toFixed(2);
+			load = round_two(nRides*singleFare - remaining);
 		}
 		return Math.ceil(load / inputRounding)*inputRounding;
 	};
 	
 	var calc_remainder = function(remaining, nRides, amount_new, i_bonus){
-		var remainder = nRides*singleFare - remaining - i_bonus*amount_new;
+		var remainder = - nRides*singleFare + remaining + i_bonus*amount_new;
 		return remainder;
+	};
+
+	var round_two = function(num){
+		return (Math.round( num * 100 ) / 100).toFixed(2);
 	};
 
 	$('body').on('submit', 'form', function(e) {
@@ -40,12 +44,14 @@
 			var remainder  = calc_remainder(remaining, nRides, amount_new, (1+i_bonus));
 			total = isNewCard ? amount_new + cardFee: amount_new;
 			//var contents = ['$' + amount.toFixed(2), '$' + card.bonus.toFixed(2), '$' + card.balance.toFixed(2), trips, amount_new].join('</td><td>');
-			var contents = ['$' + total.toFixed(2), 
-											'$' + (amount_new*i_bonus).toFixed(2), 
-											'$' + (amount_new*(1.+i_bonus)+remaining).toFixed(2), 
+			if( Math.abs(remainder) < 0.01 && amount_new > 0.0){
+				var contents = ['$' + round_two(total), 
+											'$' + round_two(amount_new*i_bonus), 
+											'$' + round_two(amount_new*(1.+i_bonus)+remaining), 
 											nRides, 
-											'$' + remainder.toFixed(2)].join('</td><td>');
-			tbody.append(['<tr><td>', contents, '</td></tr>'].join(''));
+											'$' + round_two(remainder)].join('</td><td>');
+				tbody.append(['<tr><td>', contents, '</td></tr>'].join(''));
+			}
 		}
 	});
 
