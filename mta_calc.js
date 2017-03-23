@@ -2,7 +2,7 @@
 	var singleFare    = 2.75;
 	var cardFee       = 1.00;
 	var bonusMin      = 5.50;
-	var bonus         = 0.11;
+	var bonus         = 0.05;
 	var inputRounding = 0.05;
 
 	var calc_bonus = function(remaining, nRides){
